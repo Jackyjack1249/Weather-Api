@@ -8,114 +8,102 @@ local Params = {
 
 local ServerApi = "https://ipconfig.io/json"
 
-local WeatherCodes = {
-	[0] = { Name = "Clear sky", WeatherType = "Clear", Strength = "None" },
+local TimeApi = "https://timeapi.io/api/time/current/ip?ipAddress="
 
-	[1] = { Name = "Mainly clear", WeatherType = "Cloudy", Strength = "Light" },
-	[2] = { Name = "Partly cloudy", WeatherType = "Cloudy", Strength = "Moderate" },
-	[3] = { Name = "Overcast", WeatherType = "Cloudy", Strength = "Heavy" },
-
-	[45] = { Name = "Fog", WeatherType = "Fog", Strength = "Moderate" },
-	[48] = { Name = "Depositing rime fog", WeatherType = "Fog", Strength = "Heavy" },
-
-	[51] = { Name = "Drizzle", WeatherType = "Drizzle", Strength = "Light" },
-	[53] = { Name = "Drizzle", WeatherType = "Drizzle", Strength = "Moderate" },
-	[55] = { Name = "Drizzle", WeatherType = "Drizzle", Strength = "Heavy" },
-
-	[56] = { Name = "Freezing Drizzle", WeatherType = "Freezing Drizzle", Strength = "Light" },
-	[57] = { Name = "Freezing Drizzle", WeatherType = "Freezing Drizzle", Strength = "Heavy" },
-
-	[61] = { Name = "Rain", WeatherType = "Rain", Strength = "Slight" },
-	[63] = { Name = "Rain", WeatherType = "Rain", Strength = "Moderate" },
-	[65] = { Name = "Rain", WeatherType = "Rain", Strength = "Heavy" },
-
-	[66] = { Name = "Freezing Rain", WeatherType = "Freezing Rain", Strength = "Light" },
-	[67] = { Name = "Freezing Rain", WeatherType = "Freezing Rain", Strength = "Heavy" },
-
-	[71] = { Name = "Snowfall", WeatherType = "Snow", Strength = "Slight" },
-	[73] = { Name = "Snowfall", WeatherType = "Snow", Strength = "Moderate" },
-	[75] = { Name = "Snowfall", WeatherType = "Snow", Strength = "Heavy" },
-	[77] = { Name = "Snow grains", WeatherType = "Snow", Strength = "None" },
-
-	[80] = { Name = "Rain showers", WeatherType = "Rain Showers", Strength = "Slight" },
-	[81] = { Name = "Rain showers", WeatherType = "Rain Showers", Strength = "Moderate" },
-	[82] = { Name = "Rain showers", WeatherType = "Rain Showers", Strength = "Violent" },
-
-	[85] = { Name = "Snow showers", WeatherType = "Snow Showers", Strength = "Slight" },
-	[86] = { Name = "Snow showers", WeatherType = "Snow Showers", Strength = "Heavy" },
-
-	[95] = { Name = "Thunderstorm", WeatherType = "Thunderstorm", Strength = "Slight or Moderate" },
-	[96] = { Name = "Thunderstorm with hail", WeatherType = "Thunderstorm", Strength = "Slight" },
-	[99] = { Name = "Thunderstorm with hail", WeatherType = "Thunderstorm", Strength = "Heavy" }
-}
+local WeatherModule = require(script.WeatherHandler)
+local WeatherCodes = require(script.WeatherCodes)
 
 local ParamsSetUp = "?"
+
+local Ip
 
 local HttpService = game:GetService("HttpService")
 local LightingService = game:GetService("Lighting")
 local PlayerService = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
-local function CurrentWeather()
-	print("Lets get that weather shall we")
-	local Weather
-	
-	for key, value in pairs(Params) do
-		if type(value) == "table" then
-			value = table.concat(value, ",") -- Convert list to comma-separated string
-		end
-		ParamsSetUp = ParamsSetUp .. key .. "=" .. tostring(value) .. "&"
-	end
-
-	-- Remove last "&" from query
-	ParamsSetUp = ParamsSetUp:sub(1, -2)
+local function ApiRequest(Api)
+	task.wait(1)
+	local Data
 	
 	local Success, Error = pcall(function()
-		Weather = HttpService:GetAsync(WeatherAPI..ParamsSetUp)
+		Data = HttpService:GetAsync(Api)
 	end)
 	
 	if Success then
-		print("SUCCESS YEA")
-		Weather = HttpService:JSONDecode(Weather)
+		return Data
+	end
+end
+
+local function CurrentWeather()
+	task.wait(1)
+	if #ParamsSetUp == 1 then
+		for key, value in pairs(Params) do
+			if type(value) == "table" then
+				value = table.concat(value, ",") -- Convert list to comma-separated string
+			end
+			ParamsSetUp = ParamsSetUp .. key .. "=" .. tostring(value) .. "&"
+		end
+		ParamsSetUp = ParamsSetUp:sub(1, -2)
+	end
+	
+	local Weather = HttpService:JSONDecode(ApiRequest(WeatherAPI..ParamsSetUp))
+	
+	if Weather then
 		local WeatherCode = Weather["current"].weather_code
 		
-		local CorrospondingWeatherName = WeatherCodes[WeatherCode].Name
-		local CorrospondingWeatherType = WeatherCodes[WeatherCode].WeatherType
-		local CorrospondingWeatherStrength = WeatherCodes[WeatherCode].Strength
+		local CorrospondingWeatherType = WeatherCodes.WeatherCodes[WeatherCode].WeatherType
+		local CorrospondingWeatherStrength = WeatherCodes.WeatherCodes[WeatherCode].Strength
 		
-		warn("Weather is ", CorrospondingWeatherName, CorrospondingWeatherType, CorrospondingWeatherStrength)
-		
-		-- game:GetService("ReplicatedStorage").MyRealEvent:Fire(CorrospondingWeatherType, CorrospondingWeatherStrength)
-		-- You can then call an event with the WeatherType and Strength (Im too lazy to do that)
+		WeatherModule.Direct(CorrospondingWeatherType, CorrospondingWeatherStrength)
 	else
-		warn(Error)
+		warn("Something went wrong getting the weather buddy")
 	end
 
 end
 
 local function SetTime()
-	local Time = os.date("%H") * 60 + os.date("%M")
-
-	LightingService:SetMinutesAfterMidnight(Time)
-
-	CurrentWeather()
-end
-
-local function GetServerIp()
-	print("bro update 2")
-	local ServerIP
+	task.wait(1)
+	local Result = ApiRequest(TimeApi..Ip)
 	
-	local Sucess, Ip = pcall(function()
-		return HttpService:GetAsync("https://ipconfig.io/json")
-	end)
+	if Result then
+		local Time = HttpService:JSONDecode(Result)
 
-	if Ip then
-		ServerIP = HttpService:JSONDecode(Ip)
-		
-		Params.latitude = ServerIP["latitude"]
-		Params.longitude = ServerIP["longitude"]
-		
+		if Time then
+			print("yea mate")
+			local TotalTime = Time["hour"] * 60 + Time["minute"]
+			LightingService:SetMinutesAfterMidnight(TotalTime)
+
+			coroutine.resume(coroutine.create(function()
+				while wait(60) do
+					TotalTime = TotalTime + 1
+					LightingService:SetMinutesAfterMidnight(TotalTime)
+				end
+			end))
+		end
+	else
 		SetTime()
 	end
 end
 
-PlayerService.PlayerAdded:Connect(GetServerIp)
+local function GetServerIp()
+	task.wait(1)
+	local ServerIP = HttpService:JSONDecode(ApiRequest(ServerApi))
+
+	if ServerIP then
+		Params.latitude = ServerIP["latitude"]
+		Params.longitude = ServerIP["longitude"]
+		
+		Ip = ServerIP["ip"]
+		SetTime()
+	else
+		warn("So something went wrong getting the Ip of server buddy")
+	end
+end
+
+GetServerIp()
+CurrentWeather()
+
+while wait(3600) do
+	CurrentWeather() -- Weather Api Updates Hourly
+end
