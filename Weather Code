@@ -1,0 +1,42 @@
+local module = {}
+module.WeatherCodes = {
+	[0] = { Name = "Clear sky", WeatherType = "Clear", Strength = "None" },
+
+	[1] = { Name = "Mainly clear", WeatherType = "Cloudy", Strength = "Light" },
+	[2] = { Name = "Partly cloudy", WeatherType = "Cloudy", Strength = "Moderate" },
+	[3] = { Name = "Overcast", WeatherType = "Cloudy", Strength = "Heavy" },
+
+	[45] = { Name = "Fog", WeatherType = "Fog", Strength = "Moderate" },
+	[48] = { Name = "Depositing rime fog", WeatherType = "Fog", Strength = "Heavy" },
+
+	[51] = { Name = "Drizzle", WeatherType = "Drizzle", Strength = "Light" },
+	[53] = { Name = "Drizzle", WeatherType = "Drizzle", Strength = "Moderate" },
+	[55] = { Name = "Drizzle", WeatherType = "Drizzle", Strength = "Heavy" },
+
+	[56] = { Name = "Freezing Drizzle", WeatherType = "Freezing Drizzle", Strength = "Light" },
+	[57] = { Name = "Freezing Drizzle", WeatherType = "Freezing Drizzle", Strength = "Heavy" },
+
+	[61] = { Name = "Rain", WeatherType = "Rain", Strength = "Slight" },
+	[63] = { Name = "Rain", WeatherType = "Rain", Strength = "Moderate" },
+	[65] = { Name = "Rain", WeatherType = "Rain", Strength = "Heavy" },
+
+	[66] = { Name = "Freezing Rain", WeatherType = "Freezing Rain", Strength = "Light" },
+	[67] = { Name = "Freezing Rain", WeatherType = "Freezing Rain", Strength = "Heavy" },
+
+	[71] = { Name = "Snowfall", WeatherType = "Snow", Strength = "Slight" },
+	[73] = { Name = "Snowfall", WeatherType = "Snow", Strength = "Moderate" },
+	[75] = { Name = "Snowfall", WeatherType = "Snow", Strength = "Heavy" },
+	[77] = { Name = "Snow grains", WeatherType = "Snow", Strength = "None" },
+
+	[80] = { Name = "Rain showers", WeatherType = "Rain Showers", Strength = "Slight" },
+	[81] = { Name = "Rain showers", WeatherType = "Rain Showers", Strength = "Moderate" },
+	[82] = { Name = "Rain showers", WeatherType = "Rain Showers", Strength = "Violent" },
+
+	[85] = { Name = "Snow showers", WeatherType = "Snow Showers", Strength = "Slight" },
+	[86] = { Name = "Snow showers", WeatherType = "Snow Showers", Strength = "Heavy" },
+
+	[95] = { Name = "Thunderstorm", WeatherType = "Thunderstorm", Strength = "Slight or Moderate" },
+	[96] = { Name = "Thunderstorm with hail", WeatherType = "Thunderstorm", Strength = "Slight" },
+	[99] = { Name = "Thunderstorm with hail", WeatherType = "Thunderstorm", Strength = "Heavy" }
+}
+return module
