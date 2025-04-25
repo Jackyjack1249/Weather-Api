@@ -1,0 +1,37 @@
+local module = {}
+module.DirectionTable = {
+	["Clear"] = script.Clear,
+	["Cloudy"] = script.Cloudy,
+	["Fog"] = script.Fog,
+	["Drizzle"] = script.LightDrizzle,
+	["Freezing Drizzle"] = script.FreezingDrizzle,
+	["Rain"] = script.Rain,
+	["Freezing Rain"] = script.FreezingRain,
+	["Snow"] = script.Snow,
+	["Rain Showers"] = script.RainShowers,
+	["Snow Showers"] = script.SnowShowers,
+	["Thunderstorm"] = script.Thunderstorms
+}
+
+module.Direct = function(WeatherType, Strength)
+	print(WeatherType)
+	print(module.DirectionTable[WeatherType])
+	
+	for i, LightingItems in pairs(game:GetService("Lighting"):GetChildren()) do
+		LightingItems:Destroy()
+	end
+	
+	for i, Terrain in pairs(game:GetService("Workspace").Terrain:GetChildren()) do
+		Terrain:Destroy()
+	end
+	
+	for i, WeatherItems in pairs(module.DirectionTable[WeatherType]:GetChildren()) do
+		if WeatherItems:IsA("Clouds") then
+			WeatherItems:Clone().Parent = game:GetService("Workspace").Terrain
+		else
+			WeatherItems:Clone().Parent = game:GetService("Lighting")
+		end
+	end
+end
+
+return module
